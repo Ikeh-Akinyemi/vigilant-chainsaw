@@ -1,4 +1,3 @@
-// app/routes/_index.tsx
 import { Link } from "react-router";
 
 export default function Index() {

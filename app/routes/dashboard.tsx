@@ -1,20 +1,34 @@
-// app/routes/_dashboard.tsx
+// app/routes/dashboard.tsx (FINAL FIX)
 import { Outlet, useLoaderData } from "react-router";
-import type { LoaderFunctionArgs } from "react-router";
+import type { LoaderFunctionArgs, MiddlewareFunction } from "react-router";
 import { getUserFromRequest } from "~/auth";
 import type { User } from "~/auth";
+import { userContext } from "~/context";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  console.log("Checking auth in _dashboard layout loader...");
+const authMiddleware: MiddlewareFunction = async ({ request, context }) => {
+  console.log("Running auth middleware in _dashboard...");
   const user = await getUserFromRequest(request);
 
   if (!user) {
-    console.log("No user, redirecting to /login");
-    // This redirect *should* stop everything, but it won't.
-    throw Response.redirect(new URL("/login", request.url));
+    console.log("Middleware: No user, redirecting to /login");
+
+    throw new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/login",
+      },
+    });
   }
 
-  console.log("User found, returning from layout loader.");
+  console.log("Middleware: User found, setting in context.");
+  context.set(userContext, user);
+};
+
+export const middleware: MiddlewareFunction[] = [authMiddleware];
+
+export async function loader({ context }: LoaderFunctionArgs) {
+  const user = context.get(userContext);
+  console.log("Layout loader running (user guaranteed).");
   return new Response(JSON.stringify({ user }), {
     headers: { "Content-Type": "application/json" },
   });

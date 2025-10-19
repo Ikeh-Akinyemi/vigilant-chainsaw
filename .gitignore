@@ -6,5 +6,3 @@
 /.react-router/
 /build/
 
-/app/routes/dashboard.settings.tsx
-/app/context.ts
